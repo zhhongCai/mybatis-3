@@ -46,15 +46,43 @@ import org.apache.ibatis.reflection.property.PropertyNamer;
  */
 public class Reflector {
 
+  /**
+   *  具体类
+   */
   private final Class<?> type;
+  /**
+   * 类的可读属性
+   */
   private final String[] readablePropertyNames;
+  /**
+   *  类的可写属性
+   */
   private final String[] writablePropertyNames;
+  /**
+   * Map<属性名, GetFieldInvoker/MethodInvoker>
+   */
   private final Map<String, Invoker> setMethods = new HashMap<>();
+  /**
+   *  Map<属性名, SetFieldInvoker/MethodInvoker>
+   */
   private final Map<String, Invoker> getMethods = new HashMap<>();
+
+  /**
+   *  Map<属性名，set方法的参数类型>
+   */
   private final Map<String, Class<?>> setTypes = new HashMap<>();
+  /**
+   *  Map<属性名，get方法的返回类型>
+   */
   private final Map<String, Class<?>> getTypes = new HashMap<>();
+  /**
+   *  默认构造函数
+   */
   private Constructor<?> defaultConstructor;
 
+  /**
+   *  Map<小写属性名, 属性名>
+   */
   private Map<String, String> caseInsensitivePropertyMap = new HashMap<>();
 
   public Reflector(Class<?> clazz) {
@@ -62,6 +90,7 @@ public class Reflector {
     addDefaultConstructor(clazz);
     addGetMethods(clazz);
     addSetMethods(clazz);
+    // 调用addFields之后，getter和setter是一一对应的
     addFields(clazz);
     readablePropertyNames = getMethods.keySet().toArray(new String[getMethods.keySet().size()]);
     writablePropertyNames = setMethods.keySet().toArray(new String[setMethods.keySet().size()]);
@@ -73,6 +102,10 @@ public class Reflector {
     }
   }
 
+  /**
+   * 获取默认构造函数
+   * @param clazz
+   */
   private void addDefaultConstructor(Class<?> clazz) {
     Constructor<?>[] consts = clazz.getDeclaredConstructors();
     for (Constructor<?> constructor : consts) {
@@ -82,6 +115,10 @@ public class Reflector {
     }
   }
 
+  /**
+   * 获取getter方法
+   * @param cls
+   */
   private void addGetMethods(Class<?> cls) {
     Map<String, List<Method>> conflictingGetters = new HashMap<>();
     Method[] methods = getClassMethods(cls);
@@ -99,9 +136,26 @@ public class Reflector {
     resolveGetterConflicts(conflictingGetters);
   }
 
+  /**
+   * 处理同名getter: 取返回为子类的getter方法
+   * 比如:
+   *    public Object getXxx(){...}
+   *
+   *    @Override
+   *    public String getXxx(){...}
+   *
+   * 取 public String getXxx(){...};
+   *
+   *    public boolean getYyy(){...}
+   *
+   *    public boolean isYyy(){...}
+   * 取 public boolean isYyy(){...}
+   * @param conflictingGetters
+   */
   private void resolveGetterConflicts(Map<String, List<Method>> conflictingGetters) {
     for (Entry<String, List<Method>> entry : conflictingGetters.entrySet()) {
       Method winner = null;
+      // 属性名
       String propName = entry.getKey();
       for (Method candidate : entry.getValue()) {
         if (winner == null) {
@@ -110,7 +164,9 @@ public class Reflector {
         }
         Class<?> winnerType = winner.getReturnType();
         Class<?> candidateType = candidate.getReturnType();
+        // 返回类型一致
         if (candidateType.equals(winnerType)) {
+          // 返回类型不为boolean
           if (!boolean.class.equals(candidateType)) {
             throw new ReflectionException(
                 "Illegal overloaded getter method with ambiguous type for property "
@@ -119,8 +175,11 @@ public class Reflector {
           } else if (candidate.getName().startsWith("is")) {
             winner = candidate;
           }
+         //  candidateType 是 winnerType的父类（或相同类型）
         } else if (candidateType.isAssignableFrom(winnerType)) {
           // OK getter type is descendant
+
+          // winnerType 是 candidateType的父类（或相同类型）
         } else if (winnerType.isAssignableFrom(candidateType)) {
           winner = candidate;
         } else {
@@ -134,6 +193,11 @@ public class Reflector {
     }
   }
 
+  /**
+   * 为getter方法创建MethodInvoker，设置getTypes
+   * @param name
+   * @param method
+   */
   private void addGetMethod(String name, Method method) {
     if (isValidPropertyName(name)) {
       getMethods.put(name, new MethodInvoker(method));
@@ -142,6 +206,10 @@ public class Reflector {
     }
   }
 
+  /**
+   * 获取setter方法
+   * @param cls
+   */
   private void addSetMethods(Class<?> cls) {
     Map<String, List<Method>> conflictingSetters = new HashMap<>();
     Method[] methods = getClassMethods(cls);
@@ -162,6 +230,17 @@ public class Reflector {
     list.add(method);
   }
 
+  /**
+   * 处理同名setter：根据getter返回类型和入参比较，一样就取当前setter方法；否则，取参数为子类的setter方法
+   * 比如：
+   *    public void setXxx(Object obj) {...}
+   *
+   *    @Override
+   *    public void setXxx(String obj) {...}
+   * 取：public void setXxx(String obj) {...}
+   *
+   * @param conflictingSetters
+   */
   private void resolveSetterConflicts(Map<String, List<Method>> conflictingSetters) {
     for (String propName : conflictingSetters.keySet()) {
       List<Method> setters = conflictingSetters.get(propName);
@@ -209,6 +288,11 @@ public class Reflector {
         + paramType2.getName() + "'.");
   }
 
+  /**
+   * 为setter方法创建MethodInvoker，设置setTypes
+   * @param name
+   * @param method
+   */
   private void addSetMethod(String name, Method method) {
     if (isValidPropertyName(name)) {
       setMethods.put(name, new MethodInvoker(method));
@@ -238,6 +322,12 @@ public class Reflector {
     return result;
   }
 
+  /**
+   * 类(父类)中没有getter/setter方法的属性，创建SetFieldInvoker/GetFieldInvoker
+   *
+   * 测试用例： ReflectorTest.shouldResolveSetterParam
+   * @param clazz
+   */
   private void addFields(Class<?> clazz) {
     Field[] fields = clazz.getDeclaredFields();
     for (Field field : fields) {
@@ -259,6 +349,10 @@ public class Reflector {
     }
   }
 
+  /**
+   * 为field字段创建SetFieldInvoker
+   * @param field
+   */
   private void addSetField(Field field) {
     if (isValidPropertyName(field.getName())) {
       setMethods.put(field.getName(), new SetFieldInvoker(field));
@@ -267,6 +361,10 @@ public class Reflector {
     }
   }
 
+  /**
+   * 为field字段创建GetFieldInvoker
+   * @param field
+   */
   private void addGetField(Field field) {
     if (isValidPropertyName(field.getName())) {
       getMethods.put(field.getName(), new GetFieldInvoker(field));
@@ -311,6 +409,20 @@ public class Reflector {
 
   private void addUniqueMethods(Map<String, Method> uniqueMethods, Method[] methods) {
     for (Method currentMethod : methods) {
+      /**
+       * 桥接方法:
+       * public class A<T> {
+       *     public void dosth(T t) {...}
+       * }
+       *
+       * public class B extends A<String> {
+       *    public void dosth(String t) {...}
+       * }
+       *
+       * 编译后：B有两个方法：
+       * public void dosth(Object t) {...} --> 桥接方法
+       * public void dosth(String t) {...}
+       */
       if (!currentMethod.isBridge()) {
         String signature = getSignature(currentMethod);
         // check to see if the method is already known
@@ -323,6 +435,12 @@ public class Reflector {
     }
   }
 
+  /**
+   * 方法签名：返回类型#方法名:参数类型1,参数类型2... or 方法名:参数类型1,参数类型2,比如：
+   * public java.io.Serializable[] org.apache.ibatis.reflection.ReflectorTest$Parent.getArray() 返回： [Ljava.io.Serializable;#getArray
+   * @param method
+   * @return
+   */
   private String getSignature(Method method) {
     StringBuilder sb = new StringBuilder();
     Class<?> returnType = method.getReturnType();

@@ -18,12 +18,34 @@ package org.apache.ibatis.reflection.property;
 import java.util.Iterator;
 
 /**
+ * 属性分词：
+ * 比如：new PropertyTokenizer("RichType.richList[1]").getName() == "richType";
+ *      new PropertyTokenizer("RichType.richList[1]").getChildren() == "richList[1];
+ *      new PropertyTokenizer("RichType.richList[1]").hasNext() == true;
+ *      PropertyTokenizer a = new PropertyTokenizer("RichType.richList[1]").next() == new PropertyTokenizer("richList[1]");
+ *      a.getName() == "richList";
+ *      a.getChildren() == null;
+ *      a.hasNext() == false;
+ *      a.getIndex() == 1;
+ * RichType.richProperty
  * @author Clinton Begin
  */
 public class PropertyTokenizer implements Iterator<PropertyTokenizer> {
+  /**
+   * 一级属性名,比如：richType，richList
+   */
   private String name;
+  /**
+   * 索引的属性名，比如：richType,richList[1]
+   */
   private final String indexedName;
+  /**
+   * 如果属性是集合对象，表示集合的索引
+   */
   private String index;
+  /**
+   * 子属性，比如: richList[1]
+   */
   private final String children;
 
   public PropertyTokenizer(String fullname) {

@@ -31,11 +31,25 @@ import org.apache.ibatis.reflection.wrapper.ObjectWrapperFactory;
  * @author Clinton Begin
  */
 public class MetaObject {
-
+  /**
+   * 原始对象
+   */
   private final Object originalObject;
+  /**
+   * 原始对象的包装对象
+   */
   private final ObjectWrapper objectWrapper;
+  /**
+   * 原始对象的工厂
+   */
   private final ObjectFactory objectFactory;
+  /**
+   * 原始对象的包装对象的工厂
+   */
   private final ObjectWrapperFactory objectWrapperFactory;
+  /**
+   * 反射工厂
+   */
   private final ReflectorFactory reflectorFactory;
 
   private MetaObject(Object object, ObjectFactory objectFactory, ObjectWrapperFactory objectWrapperFactory, ReflectorFactory reflectorFactory) {
@@ -81,37 +95,79 @@ public class MetaObject {
     return originalObject;
   }
 
+  /************使用引用的objectWrapper实现ObjectWrapper中定义的方法*************/
+  /**
+   * 查找属性
+   * @param propName
+   * @param useCamelCaseMapping
+   * @return
+   */
   public String findProperty(String propName, boolean useCamelCaseMapping) {
     return objectWrapper.findProperty(propName, useCamelCaseMapping);
   }
 
+  /**
+   * 获取所有getter方法的名称
+   * @return
+   */
   public String[] getGetterNames() {
     return objectWrapper.getGetterNames();
   }
 
+  /**
+   * 获取所有setter方法的名称
+   * @return
+   */
   public String[] getSetterNames() {
     return objectWrapper.getSetterNames();
   }
 
+  /**
+   * 获取给定属性的setter方法的返回值类型
+   * @param name
+   * @return
+   */
   public Class<?> getSetterType(String name) {
     return objectWrapper.getSetterType(name);
   }
 
+  /**
+   * 获取给定属性的getter方法的参数类型
+   * @param name
+   * @return
+   */
   public Class<?> getGetterType(String name) {
     return objectWrapper.getGetterType(name);
   }
 
+  /**
+   * 属性是否有setter方法
+   * @param name
+   * @return
+   */
   public boolean hasSetter(String name) {
     return objectWrapper.hasSetter(name);
   }
 
+  /**
+   * 属性是否有getter方法
+   * @param name
+   * @return
+   */
   public boolean hasGetter(String name) {
     return objectWrapper.hasGetter(name);
   }
 
+  /**
+   * 根据属性获取值
+   * @param name
+   * @return
+   */
   public Object getValue(String name) {
     PropertyTokenizer prop = new PropertyTokenizer(name);
+    // 有多级属性的情况
     if (prop.hasNext()) {
+      // 根据索引属性名取对应的metaObject
       MetaObject metaValue = metaObjectForProperty(prop.getIndexedName());
       if (metaValue == SystemMetaObject.NULL_META_OBJECT) {
         return null;
@@ -123,6 +179,11 @@ public class MetaObject {
     }
   }
 
+  /**
+   * 设置属性值
+   * @param name
+   * @param value
+   */
   public void setValue(String name, Object value) {
     PropertyTokenizer prop = new PropertyTokenizer(name);
     if (prop.hasNext()) {
@@ -141,6 +202,11 @@ public class MetaObject {
     }
   }
 
+  /**
+   * 获取属性对应的metaObject
+   * @param name
+   * @return
+   */
   public MetaObject metaObjectForProperty(String name) {
     Object value = getValue(name);
     return MetaObject.forObject(value, objectFactory, objectWrapperFactory, reflectorFactory);
