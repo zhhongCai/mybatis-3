@@ -114,13 +114,11 @@ public class Reflector {
     Arrays.stream(constructors).filter(constructor -> constructor.getParameterTypes().length == 0)
       .findAny().ifPresent(constructor -> this.defaultConstructor = constructor);
   }
-
-  private void addGetMethods(Class<?> clazz) {
   /**
    * 获取getter方法
-   * @param cls
+   * @param clazz
    */
-  private void addGetMethods(Class<?> cls) {
+  private void addGetMethods(Class<?> clazz) {
     Map<String, List<Method>> conflictingGetters = new HashMap<>();
     Method[] methods = getClassMethods(clazz);
     Arrays.stream(methods).filter(m -> m.getParameterTypes().length == 0 && PropertyNamer.isGetter(m.getName()))
@@ -193,6 +191,8 @@ public class Reflector {
       Type returnType = TypeParameterResolver.resolveReturnType(method, type);
       getTypes.put(name, typeToClass(returnType));
     }
+  }
+
   private void addGetMethod(String name, Method method, boolean isAmbiguous) {
     MethodInvoker invoker = isAmbiguous
         ? new AmbiguousMethodInvoker(method, MessageFormat.format(
@@ -204,14 +204,13 @@ public class Reflector {
     getTypes.put(name, typeToClass(returnType));
   }
 
-  private void addSetMethods(Class<?> clazz) {
   /**
    * 获取setter方法
    * @param cls
    */
   private void addSetMethods(Class<?> cls) {
     Map<String, List<Method>> conflictingSetters = new HashMap<>();
-    Method[] methods = getClassMethods(clazz);
+    Method[] methods = getClassMethods(cls);
     Arrays.stream(methods).filter(m -> m.getParameterTypes().length == 1 && PropertyNamer.isSetter(m.getName()))
       .forEach(m -> addMethodConflict(conflictingSetters, PropertyNamer.methodToProperty(m.getName()), m));
     resolveSetterConflicts(conflictingSetters);
@@ -234,6 +233,7 @@ public class Reflector {
    * 取：public void setXxx(String obj) {...}
    *
    * @param conflictingSetters
+   *
    */
   private void resolveSetterConflicts(Map<String, List<Method>> conflictingSetters) {
     for (String propName : conflictingSetters.keySet()) {
@@ -400,7 +400,7 @@ public class Reflector {
 
   private void addUniqueMethods(Map<String, Method> uniqueMethods, Method[] methods) {
     for (Method currentMethod : methods) {
-      /**
+      /*
        * 桥接方法:
        * public class A<T> {
        *     public void dosth(T t) {...}
@@ -413,6 +413,7 @@ public class Reflector {
        * 编译后：B有两个方法：
        * public void dosth(Object t) {...} --> 桥接方法
        * public void dosth(String t) {...}
+       *
        */
       if (!currentMethod.isBridge()) {
         String signature = getSignature(currentMethod);

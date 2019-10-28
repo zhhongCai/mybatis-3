@@ -23,9 +23,10 @@ class ParameterExpressionTest {
 
   @Test
   void simpleProperty() {
-    Map<String, String> result = new ParameterExpression("id");
-    Assertions.assertEquals(1, result.size());
-    Assertions.assertEquals("id", result.get("property"));
+    Map<String, String> result = new ParameterExpression("(id):VARCHAR");
+    Assertions.assertEquals(2, result.size());
+    Assertions.assertEquals("id", result.get("expression"));
+    Assertions.assertEquals("VARCHAR", result.get("jdbcType"));
   }
 
   @Test

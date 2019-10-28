@@ -32,8 +32,17 @@ import org.apache.ibatis.type.TypeHandlerRegistry;
  * @author Clinton Begin
  */
 public abstract class BaseBuilder {
+  /**
+   * 配置
+   */
   protected final Configuration configuration;
+  /**
+   * 类型别名注册器
+   */
   protected final TypeAliasRegistry typeAliasRegistry;
+  /**
+   * 类型转换处理（入参类型转换，返回结果类型转换）注册器
+   */
   protected final TypeHandlerRegistry typeHandlerRegistry;
 
   public BaseBuilder(Configuration configuration) {

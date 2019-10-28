@@ -53,6 +53,9 @@ public class XMLStatementBuilder extends BaseBuilder {
     this.requiredDatabaseId = databaseId;
   }
 
+  /**
+   * 处理"select|insert|update|delete"节点
+   */
   public void parseStatementNode() {
     String id = context.getStringAttribute("id");
     String databaseId = context.getStringAttribute("databaseId");

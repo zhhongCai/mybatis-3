@@ -54,6 +54,9 @@ import org.apache.ibatis.type.TypeHandler;
  */
 public class MapperBuilderAssistant extends BaseBuilder {
 
+  /**
+   * 当前命名空间
+   */
   private String currentNamespace;
   private final String resource;
   private Cache currentCache;

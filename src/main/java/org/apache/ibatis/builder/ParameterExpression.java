@@ -71,8 +71,15 @@ public class ParameterExpression extends HashMap<String, String> {
     }
   }
 
+  /**
+   * 查找第p个字符后的空格所在位置
+   * @param expression
+   * @param p
+   * @return
+   */
   private int skipWS(String expression, int p) {
     for (int i = p; i < expression.length(); i++) {
+      // 0x20为空格的ascii十六进制值
       if (expression.charAt(i) > 0x20) {
         return i;
       }
@@ -80,6 +87,13 @@ public class ParameterExpression extends HashMap<String, String> {
     return expression.length();
   }
 
+  /**
+   * 查找第p个字符后的在endChars中的字符的位置
+   * @param expression
+   * @param p
+   * @param endChars
+   * @return
+   */
   private int skipUntil(String expression, int p, final String endChars) {
     for (int i = p; i < expression.length(); i++) {
       char c = expression.charAt(i);

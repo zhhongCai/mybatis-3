@@ -35,7 +35,7 @@ public class MapperProxy<T> implements InvocationHandler, Serializable {
 
   private static final long serialVersionUID = -6424540398559729838L;
   private static final int ALLOWED_MODES = MethodHandles.Lookup.PRIVATE | MethodHandles.Lookup.PROTECTED
-      | MethodHandles.Lookup.PACKAGE | MethodHandles.Lookup.PUBLIC;
+    | MethodHandles.Lookup.PACKAGE | MethodHandles.Lookup.PUBLIC;
   private static final Constructor<Lookup> lookupConstructor;
   private static final Method privateLookupInMethod;
   private final SqlSession sqlSession;
@@ -65,8 +65,8 @@ public class MapperProxy<T> implements InvocationHandler, Serializable {
         lookup.setAccessible(true);
       } catch (NoSuchMethodException e) {
         throw new IllegalStateException(
-            "There is neither 'privateLookupIn(Class, Lookup)' nor 'Lookup(Class, int)' method in java.lang.invoke.MethodHandles.",
-            e);
+          "There is neither 'privateLookupIn(Class, Lookup)' nor 'Lookup(Class, int)' method in java.lang.invoke.MethodHandles.",
+          e);
       } catch (Throwable t) {
         lookup = null;
       }
@@ -78,11 +78,7 @@ public class MapperProxy<T> implements InvocationHandler, Serializable {
   public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
     try {
       if (Object.class.equals(method.getDeclaringClass())) {
-      // object中的方法
         return method.invoke(this, args);
-      } else if (isDefaultMethod(method)) {
-        // 接口中的默认实现
-        return invokeDefaultMethod(proxy, method, args);
       } else if (method.isDefault()) {
         if (privateLookupInMethod == null) {
           return invokeDefaultMethodJava8(proxy, method, args);
@@ -99,22 +95,22 @@ public class MapperProxy<T> implements InvocationHandler, Serializable {
 
   private MapperMethod cachedMapperMethod(Method method) {
     return methodCache.computeIfAbsent(method,
-        k -> new MapperMethod(mapperInterface, method, sqlSession.getConfiguration()));
+      k -> new MapperMethod(mapperInterface, method, sqlSession.getConfiguration()));
   }
 
   private Object invokeDefaultMethodJava9(Object proxy, Method method, Object[] args)
-      throws Throwable {
+    throws Throwable {
     final Class<?> declaringClass = method.getDeclaringClass();
     return ((Lookup) privateLookupInMethod.invoke(null, declaringClass, MethodHandles.lookup()))
-        .findSpecial(declaringClass, method.getName(),
-            MethodType.methodType(method.getReturnType(), method.getParameterTypes()), declaringClass)
-        .bindTo(proxy).invokeWithArguments(args);
+      .findSpecial(declaringClass, method.getName(),
+        MethodType.methodType(method.getReturnType(), method.getParameterTypes()), declaringClass)
+      .bindTo(proxy).invokeWithArguments(args);
   }
 
   private Object invokeDefaultMethodJava8(Object proxy, Method method, Object[] args)
-      throws Throwable {
+    throws Throwable {
     final Class<?> declaringClass = method.getDeclaringClass();
     return lookupConstructor.newInstance(declaringClass, ALLOWED_MODES).unreflectSpecial(method, declaringClass)
-        .bindTo(proxy).invokeWithArguments(args);
+      .bindTo(proxy).invokeWithArguments(args);
   }
 }
