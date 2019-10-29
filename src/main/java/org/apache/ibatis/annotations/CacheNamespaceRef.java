@@ -35,6 +35,7 @@ import java.lang.annotation.Target;
 public @interface CacheNamespaceRef {
 
   /**
+   * FQCN full qualify class name
    * A namespace type to reference a cache (the namespace name become a FQCN of specified type).
    */
   Class<?> value() default void.class;

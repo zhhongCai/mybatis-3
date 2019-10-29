@@ -123,19 +123,26 @@ public class MapperAnnotationBuilder {
     this.type = type;
   }
 
+  /**
+   * 解析注解
+   */
   public void parse() {
     String resource = type.toString();
     if (!configuration.isResourceLoaded(resource)) {
+      //加载xml mapper文件如果存在
       loadXmlResource();
       configuration.addLoadedResource(resource);
       assistant.setCurrentNamespace(type.getName());
+      // CacheNamespace注解解析处理
       parseCache();
+      // CacheNamespaceRef注解解析处理
       parseCacheRef();
       Method[] methods = type.getMethods();
       for (Method method : methods) {
         try {
           // issue #237
           if (!method.isBridge()) {
+            // 处理方法上的注解，生成sql语句
             parseStatement(method);
           }
         } catch (IncompleteElementException e) {
@@ -143,6 +150,7 @@ public class MapperAnnotationBuilder {
         }
       }
     }
+    // 之前解析异常的重新解析一次
     parsePendingMethods();
   }
 
@@ -161,6 +169,9 @@ public class MapperAnnotationBuilder {
     }
   }
 
+  /**
+   * 加载xml文件如果存在：com.xxx.yyy.AA 类对应文件com/xxx/yyy/AA.xml
+   */
   private void loadXmlResource() {
     // Spring may not know the real resource name so we check a flag
     // to prevent loading again a resource twice
@@ -184,6 +195,9 @@ public class MapperAnnotationBuilder {
     }
   }
 
+  /**
+   * 处理CacheNamespace注解
+   */
   private void parseCache() {
     CacheNamespace cacheDomain = type.getAnnotation(CacheNamespace.class);
     if (cacheDomain != null) {
@@ -206,6 +220,9 @@ public class MapperAnnotationBuilder {
     return props;
   }
 
+  /**
+   * CacheNamespaceRef注解处理
+   */
   private void parseCacheRef() {
     CacheNamespaceRef cacheDomainRef = type.getAnnotation(CacheNamespaceRef.class);
     if (cacheDomainRef != null) {
@@ -296,6 +313,10 @@ public class MapperAnnotationBuilder {
     return null;
   }
 
+  /**
+   * 方法上的注解解析处理
+   * @param method
+   */
   void parseStatement(Method method) {
     Class<?> parameterTypeClass = getParameterType(method);
     LanguageDriver languageDriver = getLanguageDriver(method);
@@ -465,6 +486,13 @@ public class MapperAnnotationBuilder {
     return returnType;
   }
 
+  /**
+   * Select\Update\Insert\Delete注解或*Provider注解解析处理
+   * @param method
+   * @param parameterType
+   * @param languageDriver
+   * @return
+   */
   private SqlSource getSqlSourceFromAnnotations(Method method, Class<?> parameterType, LanguageDriver languageDriver) {
     try {
       Class<? extends Annotation> sqlAnnotationType = getSqlAnnotationType(method);
