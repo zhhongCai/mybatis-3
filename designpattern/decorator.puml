@@ -1,0 +1,239 @@
+@startuml
+
+interface Cache {
++putObject(Object, Object) void
++getObject(Object) Object
++removeObject(Object) Object
++clear() void
+}
+
+note top of Cache
+    Component
+end note
+
+class PerpetualCache implements Cache {
+-Map<Object, Object> cache
+
++putObject(Object, Object) void
++getObject(Object) Object
++removeObject(Object) Object
++clear() void
+}
+
+note top of PerpetualCache
+    ConcreteComponent
+end note
+
+class BlockingCache implements Cache {
+- final Cache delegate;
+
++putObject(Object, Object) void
++getObject(Object) Object
++removeObject(Object) Object
++clear() void
+}
+
+note bottom of BlockingCache
+  Decorator
+
+  @Override
+  public void putObject(Object key, Object value) {
+    try {
+      delegate.putObject(key, value);
+    } finally {
+      releaseLock(key);
+    }
+  }
+end note
+
+class FifoCache implements Cache {
+- final Cache delegate;
+
++putObject(Object, Object) void
++getObject(Object) Object
++removeObject(Object) Object
++clear() void
+}
+
+note bottom of FifoCache
+    Decorator
+
+    @Override
+    public void putObject(Object key, Object value) {
+      cycleKeyList(key);
+      delegate.putObject(key, value);
+    }
+end note
+
+
+class LoggingCache implements Cache {
+- final Cache delegate;
+
++putObject(Object, Object) void
++getObject(Object) Object
++removeObject(Object) Object
++clear() void
+}
+
+note bottom of LoggingCache
+    Decorator
+
+    @Override
+    public void putObject(Object key, Object value) {
+      delegate.putObject(key, object);
+    }
+end note
+
+class LruCache implements Cache {
+- final Cache delegate;
+
++putObject(Object, Object) void
++getObject(Object) Object
++removeObject(Object) Object
++clear() void
+}
+
+note bottom of LruCache
+    Decorator
+
+    @Override
+    public void putObject(Object key, Object value) {
+      delegate.putObject(key, value);
+      cycleKeyList(key);
+    }
+end note
+
+
+class ScheduledCache implements Cache {
+- final Cache delegate;
+
++putObject(Object, Object) void
++getObject(Object) Object
++removeObject(Object) Object
++clear() void
+}
+
+note bottom of ScheduledCache
+    Decorator
+
+    @Override
+    public void putObject(Object key, Object value) {
+      clearWhenStale();
+      delegate.putObject(key, object);
+    }
+end note
+
+
+class SerializedCache implements Cache {
+- final Cache delegate;
+
++putObject(Object, Object) void
++getObject(Object) Object
++removeObject(Object) Object
++clear() void
+}
+
+note bottom of SerializedCache
+    Decorator
+
+    @Override
+    public void putObject(Object key, Object value) {
+      if (object == null || object instanceof Serializable) {
+        delegate.putObject(key, serialize((Serializable) object));
+      } else {
+        throw new CacheException("SharedCache failed to make a copy of a non-serializable object: " + object);
+      }
+    }
+end note
+
+
+class SoftCache implements Cache {
+- final Cache delegate;
+
++putObject(Object, Object) void
++getObject(Object) Object
++removeObject(Object) Object
++clear() void
+}
+
+note bottom of SoftCache
+    Decorator
+
+    @Override
+    public void putObject(Object key, Object value) {
+       removeGarbageCollectedItems();
+       delegate.putObject(key, new SoftEntry(key, value, queueOfGarbageCollectedEntries));
+    }
+end note
+
+
+class SynchronizedCache implements Cache {
+- final Cache delegate;
+
++putObject(Object, Object) void
++getObject(Object) Object
++removeObject(Object) Object
++clear() void
+}
+
+note bottom of SynchronizedCache
+    Decorator
+
+    @Override
+    public void putObject(Object key, Object value) {
+      delegate.putObject(key, object);
+    }
+end note
+
+
+class TransactionalCache implements Cache {
+- final Cache delegate;
+
++putObject(Object, Object) void
++getObject(Object) Object
++removeObject(Object) Object
++clear() void
+}
+
+note bottom of TransactionalCache
+    Decorator
+
+    @Override
+    public void putObject(Object key, Object value) {
+      entriesToAddOnCommit.put(key, object);
+    }
+end note
+
+
+class WeakCache implements Cache {
+- final Cache delegate;
+
++putObject(Object, Object) void
++getObject(Object) Object
++removeObject(Object) Object
++clear() void
+}
+
+note bottom of WeakCache
+    Decorator
+
+    @Override
+    public void putObject(Object key, Object value) {
+       removeGarbageCollectedItems();
+          delegate.putObject(key, new WeakEntry(key, value, queueOfGarbageCollectedEntries));
+    }
+end note
+
+BlockingCache *--> Cache
+FifoCache *--> Cache
+LoggingCache *--> Cache
+LruCache *--> Cache
+ScheduledCache *--> Cache
+SerializedCache *--> Cache
+SoftCache *--> Cache
+SynchronizedCache *--> Cache
+TransactionalCache *--> Cache
+WeakCache *--> Cache
+
+
+@enduml

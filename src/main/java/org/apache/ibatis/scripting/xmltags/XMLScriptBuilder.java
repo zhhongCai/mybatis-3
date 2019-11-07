@@ -102,6 +102,11 @@ public class XMLScriptBuilder extends BaseBuilder {
   }
 
   private interface NodeHandler {
+    /**
+     * 根据node名称取nodeHandlerMap中的nodeHandler来处理nodeToHandle,生成*SqlNode添加到targetContents中
+     * @param nodeToHandle
+     * @param targetContents
+     */
     void handleNode(XNode nodeToHandle, List<SqlNode> targetContents);
   }
 

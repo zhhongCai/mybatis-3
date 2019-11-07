@@ -1,0 +1,103 @@
+@startuml
+
+participant SqlSessionTest << (C,#ADD1B2) >>
+participant Resources << (C,#ADD1B2) >>
+participant SqlSessionFactoryBuilder << (C,#ADD1B2) >>
+participant XMLConfigBuilder << (C,#ADD1B2) >>
+participant XMLMapperBuilder << (C,#ADD1B2) >>
+participant Configuration << (C,#ADD1B2) >>
+participant MapperRegistry << (C,#ADD1B2) >>
+participant MapperAnnotationBuilder << (C,#ADD1B2) >>
+
+SqlSessionTest -> Resources++: Reader reader = Resources.getResourceAsReader(resource)
+SqlSessionTest <-- Resources--
+SqlSessionTest -> SqlSessionFactoryBuilder++: new SqlSessionFactoryBuilder()
+SqlSessionFactoryBuilder -> XMLConfigBuilder: parser.parse();
+
+opt "解析configuration配置文件: parseConfiguration(parser.evalNode("/configuration"))"
+    activate XMLConfigBuilder
+    XMLConfigBuilder -> XMLConfigBuilder: 解析properties节点: propertiesElement(root.evalNode("properties"));
+    XMLConfigBuilder -> XMLConfigBuilder: 解析settings节点: Properties settings = settingsAsProperties(root.evalNode("settings"));
+    XMLConfigBuilder -> XMLConfigBuilder: 根据settings配置VFS实现类: loadCustomVfs(settings);
+    XMLConfigBuilder -> XMLConfigBuilder: 根据settings配置log实现类: loadCustomLogImpl(settings);
+    XMLConfigBuilder -> XMLConfigBuilder: 解析typeAliases节点: typeAliasesElement(root.evalNode("typeAliases"));
+    XMLConfigBuilder -> XMLConfigBuilder: 解析plugins节点: pluginElement(root.evalNode("plugins"));
+    XMLConfigBuilder -> XMLConfigBuilder: 解析objectFactory节点: objectFactoryElement(root.evalNode("objectFactory"));
+    XMLConfigBuilder -> XMLConfigBuilder: 解析objectWrapperFactory节点: objectWrapperFactoryElement(root.evalNode("objectWrapperFactory"));
+    XMLConfigBuilder -> XMLConfigBuilder: 解析reflectorFactory节点: reflectorFactoryElement(root.evalNode("reflectorFactory"));
+    XMLConfigBuilder -> XMLConfigBuilder: 设置configuration中的配置: settingsElement(settings);
+    XMLConfigBuilder -> XMLConfigBuilder: 解析environments节点: environmentsElement(root.evalNode("environments"));
+    XMLConfigBuilder -> XMLConfigBuilder: 解析databaseIdProvider节点: databaseIdProviderElement(root.evalNode("databaseIdProvider"));
+    XMLConfigBuilder -> XMLConfigBuilder: 解析typeHandlers节点: typeHandlerElement(root.evalNode("typeHandlers"));
+    XMLConfigBuilder -> XMLConfigBuilder++: 解析mappers节点: mapperElement(root.evalNode("mappers"));
+
+    alt "configuration有配置mappers节点"
+        loop "处理配置中的mappers节点"
+            alt "mapper节点配置的是包名"
+                XMLConfigBuilder -> Configuration++: addMappers(mapperPackage);
+                activate XMLConfigBuilder
+                Configuration -> MapperRegistry++: addMappers(mapperPackage);
+                MapperRegistry -> MapperRegistry++: addMappers(packageName, Object.class);;
+                loop "mapperPackage下的类"
+                    MapperRegistry -> MapperRegistry: addMapper(mapperClass);
+                    alt "mapperClass是接口且未处理过"
+                        MapperRegistry -> MapperAnnotationBuilder++: new MapperAnnotationBuilder(config, type)
+                        MapperAnnotationBuilder -> MapperAnnotationBuilder++: 解析注解方式： parse();
+                        MapperAnnotationBuilder -> MapperAnnotationBuilder: mapperClass对应的加载xml mapper文件如果存在，加载mapper文件： loadXmlResource();
+                        MapperAnnotationBuilder -> MapperAnnotationBuilder: CacheNamespace注解解析处理： parseCache();
+                        MapperAnnotationBuilder -> MapperAnnotationBuilder: CacheNamespaceRef注解解析处理： parseCacheRef();
+                        loop "mapperClass的每个非桥接方法"
+                            MapperAnnotationBuilder -> MapperAnnotationBuilder: 处理方法上的注解，生成SqlSource： parseStatement(method),@Select/@Update/@Insert/@Delete或@*Provider;
+                            MapperAnnotationBuilder -> MapperBuilderAssistant++: sqlSource非空,addMappedStatement,最终configuration.addMappedStatement(statement)加到最终configuration;
+                            MapperAnnotationBuilder <-- MapperBuilderAssistant--
+                        end
+                        MapperAnnotationBuilder -> MapperAnnotationBuilder--: addMappedStatement;
+                        MapperRegistry <-- MapperAnnotationBuilder--
+                    end
+                end
+                deactivate MapperRegistry
+
+                Configuration <-- MapperRegistry--:
+                XMLConfigBuilder <-- Configuration--:
+                deactivate XMLConfigBuilder
+            else if "mapper节点配置的是resource 或 url"
+                XMLConfigBuilder -> Resources++
+                activate XMLConfigBuilder
+                Resources -> Resources: 根据resouce或url获取Resources
+                XMLConfigBuilder <-- Resources--
+                deactivate XMLConfigBuilder
+
+                XMLConfigBuilder -> XMLMapperBuilder++: parse()
+                activate XMLConfigBuilder
+                XMLMapperBuilder -> XMLMapperBuilder++: configurationElement(parser.evalNode("/mapper"));
+
+                XMLMapperBuilder -> XMLMapperBuilder: cacheRefElement(context.evalNode("cache-ref"));
+                XMLMapperBuilder -> XMLMapperBuilder: cacheElement(context.evalNode("cache"));
+                XMLMapperBuilder -> XMLMapperBuilder: parameterMapElement(context.evalNodes("/mapper/parameterMap"));
+                XMLMapperBuilder -> XMLMapperBuilder: resultMapElements(context.evalNodes("/mapper/resultMap"));
+                XMLMapperBuilder -> XMLMapperBuilder: sqlElement(context.evalNodes("/mapper/sql"));
+                XMLMapperBuilder -> XMLMapperBuilder--: buildStatementFromContext(context.evalNodes("select|insert|update|delete"));
+
+                XMLMapperBuilder -> XMLMapperBuilder: parsePendingResultMaps();
+                XMLMapperBuilder -> XMLMapperBuilder: parsePendingCacheRefs();
+                XMLMapperBuilder -> XMLMapperBuilder: parsePendingStatements();
+
+                XMLConfigBuilder <-- XMLMapperBuilder--
+                deactivate XMLConfigBuilder
+            else if "mapper节点配置的是映射类"
+                XMLConfigBuilder -> Configuration++: addMapper(mapperInterface);
+                activate XMLConfigBuilder
+                Configuration -> Configuration: addMapper(mapperInterface), 同上mapperPackage中类处理;
+                XMLConfigBuilder <-- Configuration--:
+                deactivate XMLConfigBuilder
+            else "抛出异常:A mapper element may only specify a url,resource or class, but not more than one.\n\n"
+            end
+        end
+    end
+end
+SqlSessionFactoryBuilder <-- XMLConfigBuilder--
+deactivate XMLConfigBuilder
+
+SqlSessionTest <-- SqlSessionFactoryBuilder--
+
+@enduml
