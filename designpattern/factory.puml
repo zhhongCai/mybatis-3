@@ -1,0 +1,79 @@
+@startuml
+
+class LogFactory {
+    + static getLog(Class<?>) Log
+    + static getLog(String) Log
+}
+note top of LogFactory
+创建Log类工厂
+end note
+
+
+class MapperProxyFactory<T> {
+    - final mapperInterface  Class<T>
+    - final methodCache Map<Method, MapperMethod>
+    + T newInstance(SqlSession)
+}
+note top of MapperProxyFactory
+创建mapper代理类工厂
+end note
+
+class UnpooledDataSourceFactory {
+    + getDataSource() DataSource
+}
+note top of UnpooledDataSourceFactory
+创建unpooledDataSource工厂
+end note
+
+interface ProxyFactory {
+    + createProxy(Object, ResultLoaderMap, Configuration, ObjectFactory, List<Class<?>>, List<Object>) Object
+}
+note top of ProxyFactory
+创建loader代理类工厂接口
+end note
+
+class JavassistProxyFactory implements ProxyFactory  {
+    + createProxy(Object, ResultLoaderMap, Configuration, ObjectFactory, List<Class<?>>, List<Object>) Object
+}
+
+class CglibProxyFactory implements ProxyFactory  {
+    + createProxy(Object, ResultLoaderMap, Configuration, ObjectFactory, List<Class<?>>, List<Object>) Object
+}
+
+class DefaultReflectorFactory implements ReflectorFactory {
+    + findForClass(Class<?>) Reflector
+}
+note top of DefaultReflectorFactory
+创建Reflector工厂
+end note
+
+interface ObjectFactory {
+    + create(Class<T>) <T> T
+    + create(Class<T>, List<Class<?>>, List<Object>) <T> T
+}
+class DefaultObjectFactory implements ObjectFactory {
+    + create(Class<T>) <T> T
+    + create(Class<T>, List<Class<?>>, List<Object>) <T> T
+}
+
+class DefaultSqlSessionFactory implements SqlSessionFactory {
+    + openSession() SqlSession
+    + openSession(boolean) SqlSession
+    + openSession(Connection) SqlSession
+    + openSession(TransactionIsolationLevel) SqlSession
+    + openSession(ExecutorType) SqlSession
+    + openSession(ExecutorType, boolean) SqlSession
+    + openSession(ExecutorType, TransactionIsolationLevel) SqlSession
+    + openSession(ExecutorType, Connection) SqlSession
+    + getConfiguration() SqlSession
+}
+class JdbcTransactionFactory implements TransactionFactory {
+    + newTransaction(Connection) Transaction
+    + newTransaction(DataSource, TransactionIsolationLevel, boolean) Transaction
+}
+class ManagedTransactionFactory implements TransactionFactory {
+    + newTransaction(Connection) Transaction
+    + newTransaction(DataSource, TransactionIsolationLevel, boolean) Transaction
+}
+
+@enduml

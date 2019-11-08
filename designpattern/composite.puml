@@ -1,0 +1,67 @@
+@startuml
+
+interface SqlNode {
+    + apply(DynamicContext) boolean
+}
+
+class ChooseSqlNode implements SqlNode {
+    - final defaultSqlNode SqlNode
+    - final ifSqlNodes List<SqlNode>
+    + apply(DynamicContext) boolean
+}
+class ForEachSqlNode implements SqlNode {
+    - final evaluator ExpressionEvaluator
+    - final collectionExpression String
+    - final contents SqlNode
+    - final open String
+    - final close String
+    - final separator String
+    - final item String
+    - final index String
+    - final configuration Configuration
+    + apply(DynamicContext) boolean
+}
+class IfSqlNode implements SqlNode {
+    - test String
+    - final contents SqlNode
+    + apply(DynamicContext) boolean
+}
+class MixedSqlNode implements SqlNode {
+    -  final contents List<SqlNode>
+    + apply(DynamicContext) boolean
+}
+class SetSqlNode extends TrimSqlNode  {
+    + apply(DynamicContext) boolean
+}
+class StaticTextSqlNode implements SqlNode {
+    + apply(DynamicContext) boolean
+}
+class TextSqlNode implements SqlNode {
+    + apply(DynamicContext) boolean
+}
+class TrimSqlNode implements SqlNode {
+    - final contents SqlNode
+    - final prefix String
+    - final suffix String
+    - final prefixesToOverride List<String>
+    - final suffixesToOverride List<String>
+    - final configuration Configuration
+    + apply(DynamicContext) boolean
+}
+class VarDeclSqlNode implements SqlNode {
+    + apply(DynamicContext) boolean
+}
+class WhereSqlNode implements TrimSqlNode {
+    + apply(DynamicContext) boolean
+}
+
+ChooseSqlNode "1" *-- "n" IfSqlNode
+ChooseSqlNode "1" *-- "1" SqlNode
+ForEachSqlNode "1" *-- "1" SqlNode
+IfSqlNode "1" *-- "1" SqlNode
+MixedSqlNode "1" *-- "n" SqlNode
+SetSqlNode "1" *-- "1" SqlNode
+TrimSqlNode "1" *-- "1" SqlNode
+
+
+@enduml

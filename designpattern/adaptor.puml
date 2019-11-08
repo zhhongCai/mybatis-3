@@ -1,0 +1,174 @@
+@startuml
+
+interface org.apache.ibatis.logging.Log {
+     + isDebugEnabled() boolean
+     + boolean isTraceEnabled() boolean
+     + error(String s, Throwable e) void
+     + error(String s) void
+     + debug(String s) void
+     + trace(String s) void
+     + warn(String s) void
+}
+interface org.apache.commons.logging.Log
+interface java.util.logging.Logger
+interface org.apache.logging.log4j.Logger
+interface org.apache.logging.log4j.spi.ExtendedLoggerWrapper
+interface org.apache.log4j.Logger
+interface org.slf4j.Logger
+interface org.slf4j.spi.LocationAwareLogger
+
+class JakartaCommonsLoggingImpl {
+     - final log Log
+
+     + isDebugEnabled() boolean
+     + boolean isTraceEnabled() boolean
+     + error(String s, Throwable e) void
+     + error(String s) void
+     + debug(String s) void
+     + trace(String s) void
+     + warn(String s) void
+}
+note top of JakartaCommonsLoggingImpl
+  将org.apache.commons.logging.Log接口
+  适配为org.apache.ibatis.logging.Log接口，比如：
+  @Override
+  public void error(String s) {
+    log.error(s);
+  }
+end note
+
+class Jdk14LoggingImpl {
+     - final log Logger
+
+     + isDebugEnabled() boolean
+     + boolean isTraceEnabled() boolean
+     + error(String s, Throwable e) void
+     + error(String s) void
+     + debug(String s) void
+     + trace(String s) void
+     + warn(String s) void
+}
+
+class Log4jImpl {
+     - final log Logger
+
+     + isDebugEnabled() boolean
+     + boolean isTraceEnabled() boolean
+     + error(String s, Throwable e) void
+     + error(String s) void
+     + debug(String s) void
+     + trace(String s) void
+     + warn(String s) void
+}
+
+class Log4j2AbstractLoggerImpl {
+     - final log ExtendedLoggerWrapper
+
+     + isDebugEnabled() boolean
+     + boolean isTraceEnabled() boolean
+     + error(String s, Throwable e) void
+     + error(String s) void
+     + debug(String s) void
+     + trace(String s) void
+     + warn(String s) void
+}
+
+class Log4j2Impl {
+     - final log Log
+
+     + isDebugEnabled() boolean
+     + boolean isTraceEnabled() boolean
+     + error(String s, Throwable e) void
+     + error(String s) void
+     + debug(String s) void
+     + trace(String s) void
+     + warn(String s) void
+}
+
+class Log4j2LoggerImpl {
+     - final log Logger
+
+     + isDebugEnabled() boolean
+     + boolean isTraceEnabled() boolean
+     + error(String s, Throwable e) void
+     + error(String s) void
+     + debug(String s) void
+     + trace(String s) void
+     + warn(String s) void
+}
+
+class NoLoggingImpl {
+     + isDebugEnabled() boolean
+     + boolean isTraceEnabled() boolean
+     + error(String s, Throwable e) void
+     + error(String s) void
+     + debug(String s) void
+     + trace(String s) void
+     + warn(String s) void
+}
+
+class Slf4jImpl {
+     - log Log
+
+     + isDebugEnabled() boolean
+     + boolean isTraceEnabled() boolean
+     + error(String s, Throwable e) void
+     + error(String s) void
+     + debug(String s) void
+     + trace(String s) void
+     + warn(String s) void
+}
+class Slf4jLocationAwareLoggerImpl {
+     - final logger LocationAwareLogger
+
+     + isDebugEnabled() boolean
+     + boolean isTraceEnabled() boolean
+     + error(String s, Throwable e) void
+     + error(String s) void
+     + debug(String s) void
+     + trace(String s) void
+     + warn(String s) void
+}
+class Slf4jLoggerImpl {
+     - final log Logger
+
+     + isDebugEnabled() boolean
+     + boolean isTraceEnabled() boolean
+     + error(String s, Throwable e) void
+     + error(String s) void
+     + debug(String s) void
+     + trace(String s) void
+     + warn(String s) void
+}
+class StdOutImpl {
+     + isDebugEnabled() boolean
+     + boolean isTraceEnabled() boolean
+     + error(String s, Throwable e) void
+     + error(String s) void
+     + debug(String s) void
+     + trace(String s) void
+     + warn(String s) void
+}
+org.apache.ibatis.logging.Log <|-- JakartaCommonsLoggingImpl
+org.apache.ibatis.logging.Log <|-- Jdk14LoggingImpl
+org.apache.ibatis.logging.Log <|-- Log4jImpl
+org.apache.ibatis.logging.Log <|-- Log4j2AbstractLoggerImpl
+org.apache.ibatis.logging.Log <|-- Log4j2Impl
+org.apache.ibatis.logging.Log <|-- Log4j2LoggerImpl
+org.apache.ibatis.logging.Log <|-- NoLoggingImpl
+org.apache.ibatis.logging.Log <|-- Slf4jImpl
+org.apache.ibatis.logging.Log <|-- Slf4jLocationAwareLoggerImpl
+org.apache.ibatis.logging.Log <|-- Slf4jLoggerImpl
+org.apache.ibatis.logging.Log <|-- StdOutImpl
+
+JakartaCommonsLoggingImpl *-- org.apache.commons.logging.Log
+Jdk14LoggingImpl *-- java.util.logging.Logger
+Log4jImpl *-- org.apache.log4j.Logger
+Log4j2AbstractLoggerImpl *-- org.apache.logging.log4j.spi.ExtendedLoggerWrapper
+Log4j2Impl *-- org.apache.ibatis.logging.Log
+Log4j2LoggerImpl *-- org.apache.logging.log4j.Logger
+Slf4jImpl *-- org.slf4j.Logger
+Slf4jLocationAwareLoggerImpl *-- org.slf4j.spi.LocationAwareLogger
+Slf4jLoggerImpl *-- org.slf4j.Logger
+
+@enduml
