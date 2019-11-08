@@ -1,0 +1,54 @@
+@startuml
+
+interface Executor {
+  + NO_RESULT_HANDLER ResultHandler
+
+  + update(MappedStatement, Object) int throws SQLException
+  + query(MappedStatement, Object, RowBounds, ResultHandler, CacheKey, BoundSql) <E> List<E> throws SQLException
+  + query(MappedStatement, Object, RowBounds, ResultHandler) <E> List<E> throws SQLException
+  + queryCursor(MappedStatement, Object, RowBounds) <E> Cursor<E> throws SQLException
+  + flushStatements() List<BatchResult> throws SQLException
+  + commit(boolean) void throws SQLException
+  + rollback(boolean) void throws SQLException
+  + createCacheKey(MappedStatement, Object, RowBounds, BoundSql) CacheKey
+  + isCached(MappedStatement, CacheKey) boolean
+  + clearLocalCache() void
+  + deferLoad(MappedStatement, MetaObject, String, CacheKey, Class<?>) void
+  + getTransaction() Transaction
+  + close(boolean) void
+  + isClosed() boolean
+  + setExecutorWrapper(Executor) void
+}
+
+abstract class BaseExecutor implements Executor {
+  # abstract doUpdate(MappedStatement, Object) int throws SQLException
+  # abstract doFlushStatements(boolean) List<BatchResult> throws SQLException
+  # abstract doQuery(MappedStatement, Object, RowBounds, ResultHandler, BoundSql) <E> List<E> throws SQLException
+  # abstract doQueryCursor(MappedStatement, Object, RowBounds, BoundSql) <E> Cursor<E> throws SQLException;
+}
+
+class BatchExecutor extends BaseExecutor {
+  + doUpdate(MappedStatement, Object) int throws SQLException
+  + doFlushStatements(boolean) List<BatchResult> throws SQLException
+  + doQuery(MappedStatement, Object, RowBounds, ResultHandler, BoundSql) <E> List<E> throws SQLException
+  + doQueryCursor(MappedStatement, Object, RowBounds, BoundSql) <E> Cursor<E> throws SQLException
+}
+
+class CachingExecutor implements Executor {
+}
+
+class ReuseExecutor extends BaseExecutor {
+  + doUpdate(MappedStatement, Object) int throws SQLException
+  + doFlushStatements(boolean) List<BatchResult> throws SQLException
+  + doQuery(MappedStatement, Object, RowBounds, ResultHandler, BoundSql) <E> List<E> throws SQLException
+  + doQueryCursor(MappedStatement, Object, RowBounds, BoundSql) <E> Cursor<E> throws SQLException;
+}
+
+class SimpleExecutor extends BaseExecutor {
+  + doUpdate(MappedStatement, Object) int throws SQLException
+  + doFlushStatements(boolean) List<BatchResult> throws SQLException
+  + doQuery(MappedStatement, Object, RowBounds, ResultHandler, BoundSql) <E> List<E> throws SQLException
+  + doQueryCursor(MappedStatement, Object, RowBounds, BoundSql) <E> Cursor<E> throws SQLException;
+}
+
+@enduml

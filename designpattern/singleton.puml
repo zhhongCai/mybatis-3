@@ -1,0 +1,11 @@
+@startuml
+
+class ErrorContext {
+    + static instance() ErrorContext
+}
+note top of ErrorContext
+私有构造方法
+实例保存在线程变量中
+end note
+
+@enduml

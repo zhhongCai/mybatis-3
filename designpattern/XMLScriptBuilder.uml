@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Diagram>
+  <ID>JAVA</ID>
+  <OriginalElement>org.apache.ibatis.scripting.xmltags.XMLScriptBuilder</OriginalElement>
+  <nodes>
+    <node x="1152.375" y="663.0">org.apache.ibatis.scripting.xmltags.XMLScriptBuilder.NodeHandler</node>
+    <node x="1288.0" y="793.0">org.apache.ibatis.scripting.xmltags.XMLScriptBuilder.ChooseHandler</node>
+    <node x="643.9999999999999" y="815.0">org.apache.ibatis.scripting.xmltags.XMLScriptBuilder.SetHandler</node>
+    <node x="965.9999999999999" y="815.0">org.apache.ibatis.scripting.xmltags.XMLScriptBuilder.ForEachHandler</node>
+    <node x="1813.0" y="815.0">org.apache.ibatis.scripting.xmltags.XMLScriptBuilder.OtherwiseHandler</node>
+    <node x="2457.0" y="815.0">org.apache.ibatis.scripting.xmltags.XMLScriptBuilder.IfHandler</node>
+    <node x="1145.375" y="410.0">org.apache.ibatis.scripting.xmltags.XMLScriptBuilder</node>
+    <node x="2135.0" y="815.0">org.apache.ibatis.scripting.xmltags.XMLScriptBuilder.TrimHandler</node>
+    <node x="322.0" y="815.0">org.apache.ibatis.scripting.xmltags.XMLScriptBuilder.WhereHandler</node>
+    <node x="1015.8749999999999" y="0.0">org.apache.ibatis.builder.BaseBuilder</node>
+    <node x="0.0" y="815.0">org.apache.ibatis.scripting.xmltags.XMLScriptBuilder.BindHandler</node>
+  </nodes>
+  <notes />
+  <edges>
+    <edge source="org.apache.ibatis.scripting.xmltags.XMLScriptBuilder.WhereHandler" target="org.apache.ibatis.scripting.xmltags.XMLScriptBuilder.NodeHandler">
+      <point x="75.5" y="-25.0" />
+      <point x="548.5" y="753.0" />
+      <point x="1209.0" y="753.0" />
+      <point x="-94.375" y="25.0" />
+    </edge>
+    <edge source="org.apache.ibatis.scripting.xmltags.XMLScriptBuilder.BindHandler" target="org.apache.ibatis.scripting.xmltags.XMLScriptBuilder.NodeHandler">
+      <point x="75.5" y="-25.0" />
+      <point x="226.5" y="743.0" />
+      <point x="1171.25" y="743.0" />
+      <point x="-132.125" y="25.0" />
+    </edge>
+    <edge source="org.apache.ibatis.scripting.xmltags.XMLScriptBuilder.ForEachHandler" target="org.apache.ibatis.scripting.xmltags.XMLScriptBuilder">
+      <point x="-75.5" y="-25.0" />
+      <point x="1041.5" y="733.0" />
+      <point x="1045.6875" y="733.0" />
+      <point x="1045.6875" y="643.0" />
+      <point x="1268.2638888888887" y="643.0" />
+      <point x="-35.111111111111086" y="91.5" />
+    </edge>
+    <edge source="org.apache.ibatis.scripting.xmltags.XMLScriptBuilder.ChooseHandler" target="org.apache.ibatis.scripting.xmltags.XMLScriptBuilder.NodeHandler">
+      <point x="-126.25" y="-47.0" />
+      <point x="1414.25" y="773.0" />
+      <point x="1322.25" y="773.0" />
+      <point x="18.875" y="25.0" />
+    </edge>
+    <edge source="org.apache.ibatis.scripting.xmltags.XMLScriptBuilder.SetHandler" target="org.apache.ibatis.scripting.xmltags.XMLScriptBuilder">
+      <point x="-75.5" y="-25.0" />
+      <point x="719.4999999999999" y="633.0" />
+      <point x="1233.1527777777778" y="633.0" />
+      <point x="-70.22222222222217" y="91.5" />
+    </edge>
+    <edge source="org.apache.ibatis.scripting.xmltags.XMLScriptBuilder.ChooseHandler" target="org.apache.ibatis.scripting.xmltags.XMLScriptBuilder">
+      <point x="126.25" y="-47.0" />
+      <point x="1666.75" y="773.0" />
+      <point x="1607.5358187134502" y="773.0" />
+      <point x="1607.5358187134502" y="643.0" />
+      <point x="1338.4861111111109" y="643.0" />
+      <point x="35.111111111111086" y="91.5" />
+    </edge>
+    <edge source="org.apache.ibatis.scripting.xmltags.XMLScriptBuilder.OtherwiseHandler" target="org.apache.ibatis.scripting.xmltags.XMLScriptBuilder">
+      <point x="75.5" y="-25.0" />
+      <point x="2039.5" y="633.0" />
+      <point x="1373.5972222222222" y="633.0" />
+      <point x="70.22222222222217" y="91.5" />
+    </edge>
+    <edge source="org.apache.ibatis.scripting.xmltags.XMLScriptBuilder.NodeHandler" target="org.apache.ibatis.scripting.xmltags.XMLScriptBuilder">
+      <point x="0.0" y="-25.0" />
+      <point x="0.0" y="91.5" />
+    </edge>
+    <edge source="org.apache.ibatis.scripting.xmltags.XMLScriptBuilder.WhereHandler" target="org.apache.ibatis.scripting.xmltags.XMLScriptBuilder">
+      <point x="-75.5" y="-25.0" />
+      <point x="397.4999999999999" y="623.0" />
+      <point x="1198.0416666666665" y="623.0" />
+      <point x="-105.33333333333326" y="91.5" />
+    </edge>
+    <edge source="org.apache.ibatis.scripting.xmltags.XMLScriptBuilder" target="org.apache.ibatis.builder.BaseBuilder">
+      <point x="0.0" y="-91.5" />
+      <point x="0.0" y="180.0" />
+    </edge>
+    <edge source="org.apache.ibatis.scripting.xmltags.XMLScriptBuilder.OtherwiseHandler" target="org.apache.ibatis.scripting.xmltags.XMLScriptBuilder.NodeHandler">
+      <point x="-75.5" y="-25.0" />
+      <point x="1888.5" y="763.0" />
+      <point x="1360.0" y="763.0" />
+      <point x="56.625" y="25.0" />
+    </edge>
+    <edge source="org.apache.ibatis.scripting.xmltags.XMLScriptBuilder.SetHandler" target="org.apache.ibatis.scripting.xmltags.XMLScriptBuilder.NodeHandler">
+      <point x="75.5" y="-25.0" />
+      <point x="870.4999999999999" y="763.0" />
+      <point x="1246.75" y="763.0" />
+      <point x="-56.625" y="25.0" />
+    </edge>
+    <edge source="org.apache.ibatis.scripting.xmltags.XMLScriptBuilder.TrimHandler" target="org.apache.ibatis.scripting.xmltags.XMLScriptBuilder">
+      <point x="75.5" y="-25.0" />
+      <point x="2361.5" y="623.0" />
+      <point x="1408.7083333333335" y="623.0" />
+      <point x="105.33333333333348" y="91.5" />
+    </edge>
+    <edge source="org.apache.ibatis.scripting.xmltags.XMLScriptBuilder.ForEachHandler" target="org.apache.ibatis.scripting.xmltags.XMLScriptBuilder.NodeHandler">
+      <point x="75.5" y="-25.0" />
+      <point x="1192.5" y="773.0" />
+      <point x="1284.5" y="773.0" />
+      <point x="-18.875" y="25.0" />
+    </edge>
+    <edge source="org.apache.ibatis.scripting.xmltags.XMLScriptBuilder.BindHandler" target="org.apache.ibatis.scripting.xmltags.XMLScriptBuilder">
+      <point x="-75.5" y="-25.0" />
+      <point x="75.5" y="613.0" />
+      <point x="1162.9305555555557" y="613.0" />
+      <point x="-140.44444444444434" y="91.5" />
+    </edge>
+    <edge source="org.apache.ibatis.scripting.xmltags.XMLScriptBuilder.IfHandler" target="org.apache.ibatis.scripting.xmltags.XMLScriptBuilder.NodeHandler">
+      <point x="-75.5" y="-25.0" />
+      <point x="2532.5" y="743.0" />
+      <point x="1435.5" y="743.0" />
+      <point x="132.125" y="25.0" />
+    </edge>
+    <edge source="org.apache.ibatis.scripting.xmltags.XMLScriptBuilder.TrimHandler" target="org.apache.ibatis.scripting.xmltags.XMLScriptBuilder.NodeHandler">
+      <point x="-75.5" y="-25.0" />
+      <point x="2210.5" y="753.0" />
+      <point x="1397.75" y="753.0" />
+      <point x="94.375" y="25.0" />
+    </edge>
+    <edge source="org.apache.ibatis.scripting.xmltags.XMLScriptBuilder.IfHandler" target="org.apache.ibatis.scripting.xmltags.XMLScriptBuilder">
+      <point x="75.5" y="-25.0" />
+      <point x="2683.5" y="613.0" />
+      <point x="1443.8194444444443" y="613.0" />
+      <point x="140.44444444444434" y="91.5" />
+    </edge>
+  </edges>
+  <settings layout="Hierarchic Group" zoom="1.0" x="714.0" y="511.0" />
+  <SelectedNodes />
+  <Categories>
+    <Category>Inner Classes</Category>
+    <Category>Properties</Category>
+    <Category>Methods</Category>
+    <Category>Fields</Category>
+  </Categories>
+  <SCOPE>All</SCOPE>
+  <VISIBILITY>private</VISIBILITY>
+</Diagram>
+
