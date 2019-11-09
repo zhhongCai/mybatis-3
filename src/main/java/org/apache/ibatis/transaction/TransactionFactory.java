@@ -27,7 +27,7 @@ import org.apache.ibatis.session.TransactionIsolationLevel;
  *
  * @author Clinton Begin
  */
-public interface TransactionFactory {
+public interface  TransactionFactory {
 
   /**
    * Sets transaction factory custom properties.

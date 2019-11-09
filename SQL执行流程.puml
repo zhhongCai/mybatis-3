@@ -1,0 +1,82 @@
+@startuml
+note left
+测试SqlSessionTest.shouldSelectBlogWithPostsAndAuthorUsingSubSelectsLazily
+end note
+
+participant SqlSessionTest << (C,#ADD1B2) >>
+participant SqlSessionFactory << (C,#ADD1B2) >>
+participant DefaultSqlSession << (C,#ADD1B2) >>
+participant Configuration << (C,#ADD1B2) >>
+participant CachingExecutor << (C,#ADD1B2) >>
+participant PerpetualCache << (C,#ADD1B2) >>
+participant MappedStatement << (C,#ADD1B2) >>
+participant SimpleExecutor << (C,#ADD1B2) >>
+participant RoutingStatementHandler << (C,#ADD1B2) >>
+participant PreparedStatementHandler << (C,#ADD1B2) >>
+participant PreparedStatement << (C,#ADD1B2) >>
+participant DefaultResultSetHandler << (C,#ADD1B2) >>
+
+SqlSessionTest -> SqlSessionFactory++: openSession()
+SqlSessionTest <-- SqlSessionFactory: return session
+SqlSessionTest -> DefaultSqlSession++: selectOne()
+DefaultSqlSession -> DefaultSqlSession++: selectList()
+DefaultSqlSession -> Configuration++: getMappedStatement()
+DefaultSqlSession <-- Configuration--: return MappedStatement
+DefaultSqlSession -> CachingExecutor++: query(ms, wrapCollection(parameter), rowBounds, Executor.NO_RESULT_HANDLER)
+CachingExecutor -> MappedStatement++: getBoundSql(parameterObject)
+CachingExecutor <-- MappedStatement--: return BoundSql
+CachingExecutor -> CachingExecutor++: createCacheKey
+CachingExecutor -> SimpleExecutor++: createCacheKey
+CachingExecutor <-- SimpleExecutor--: return CacheKey
+deactivate CachingExecutor
+CachingExecutor -> CachingExecutor++: query()
+CachingExecutor ->  MappedStatement++: getCache()
+CachingExecutor <--  MappedStatement--: return Cache
+CachingExecutor -> SimpleExecutor++: delegate.query(ms, parameterObject, rowBounds, resultHandler, key, boundSql)
+SimpleExecutor -> SimpleExecutor++: queryFromDatabase(ms, parameter, rowBounds, resultHandler, key, boundSql)
+SimpleExecutor -> SimpleExecutor++: doQuery(ms, parameter, rowBounds, resultHandler, boundSql)
+SimpleExecutor -> Configuration++: newStatementHandler(wrapper, ms, parameter, rowBounds, resultHandler, boundSql)
+SimpleExecutor <-- Configuration--: return StatementHandler
+
+SimpleExecutor -> SimpleExecutor: prepareStatement(handler, ms.getStatementLog())
+
+SimpleExecutor -> RoutingStatementHandler++: query(stmt, resultHandler)
+RoutingStatementHandler -> PreparedStatementHandler++: query(statement, resultHandler)
+
+group "调用执行，具体取决于使用的jdbc driver"
+PreparedStatementHandler -> PreparedStatement: ps.execute()
+
+end
+
+group "处理返回结果"
+PreparedStatementHandler -> DefaultResultSetHandler++: handleResultSets(ps)
+DefaultResultSetHandler -> DefaultResultSetHandler++: handleResultSet
+DefaultResultSetHandler -> DefaultResultSetHandler++: handleRowValues
+DefaultResultSetHandler -> DefaultResultSetHandler++: handleRowValuesForSimpleResultMap
+DefaultResultSetHandler -> DefaultResultSetHandler++: getRowValue
+DefaultResultSetHandler -> DefaultResultSetHandler++: applyPropertyMappings
+DefaultResultSetHandler -> DefaultResultSetHandler++: getPropertyMappingValue
+DefaultResultSetHandler -> DefaultResultSetHandler++: getNestedQueryMappingValue,此处有可能：\nlazyLoader.addLoader(property, metaResultObject, resultLoader),\n在调用结果集对象(是个代理对象)的get方法时执行load操作\n(具体在EnhancedResultObjectProxyImpl.invoke);
+deactivate DefaultResultSetHandler
+deactivate DefaultResultSetHandler
+deactivate DefaultResultSetHandler
+deactivate DefaultResultSetHandler
+deactivate DefaultResultSetHandler
+deactivate DefaultResultSetHandler
+deactivate DefaultResultSetHandler
+end
+
+PreparedStatementHandler <-- DefaultResultSetHandler--: return return List<E>
+RoutingStatementHandler <-- PreparedStatementHandler--: return List<E>
+SimpleExecutor <-- RoutingStatementHandler--: return List<E>
+SimpleExecutor -> PerpetualCache: localCache.putObject(key, list);
+SimpleExecutor <-- SimpleExecutor--: return List<E>
+SimpleExecutor <-- SimpleExecutor--: return List<E>
+CachingExecutor <-- SimpleExecutor--: return List<E>
+DefaultSqlSession <-- CachingExecutor--: return List<E>
+SqlSessionTest <-- DefaultSqlSession--: return List<E>
+
+SqlSessionTest -> SqlSessionFactory--: close()
+
+
+@enduml
