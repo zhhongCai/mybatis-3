@@ -1,0 +1,45 @@
+@startuml
+
+participant XMLConfigBuilder << (C,#ADD1B2) >>
+participant Configuration << (C,#ADD1B2) >>
+participant InterceptorChain << (C,#ADD1B2) >>
+participant Plugin << (C,#ADD1B2) >>
+participant Interceptor << (C,#ADD1B2) >>
+
+group "创建插件： XMLConfigBuilder.pluginElement(XNode plugins)"
+activate XMLConfigBuilder
+XMLConfigBuilder -> XMLConfigBuilder++: 解析配置文件的plugins节点,创建插件
+XMLConfigBuilder -> Configuration++: 添加创建的插件到插件链中\naddInterceptor(Interceptor interceptor)
+deactivate XMLConfigBuilder
+Configuration -> InterceptorChain++: 添加创建的插件到插件链中\naddInterceptor(Interceptor interceptor)
+deactivate InterceptorChain
+deactivate Configuration
+deactivate XMLConfigBuilder
+end
+
+participant "ParameterHandler\nResultSetHandler\nStatementHandler\nExecutor" as PluginTarget
+note over PluginTarget
+  插件只对这四种个效
+  具体拦截哪个方法，由@Intercepts注解配置
+end note
+
+group "插件执行过程"
+Configuration -> Configuration++: newParameterHandler() or\nnewResultSetHandler() or\nnewStatementHandler() or\nnewExecutor()
+Configuration -> InterceptorChain++: pluginAll(resultSetHandler)\n创建动态代理类
+InterceptorChain -> Interceptor++: plugin()\n创建动态代理类
+Interceptor -> Plugin++: Plugin.wrap\n创建动态代理类
+Interceptor <- Plugin--: 返回创建的动态代理类
+InterceptorChain <- Interceptor--: 返回创建的动态代理类
+Configuration <- InterceptorChain--: 返回创建的动态代理类\n(如果@Intercepts注解有对应配置)
+deactivate Configuration
+
+PluginTarget -> PluginTarget++: 调用需要被拦截的方法时
+PluginTarget -> Plugin++: 调用动态代理类方法:invoke()
+Plugin -> Interceptor++: 转发插件执行: intercept()
+Plugin <- Interceptor--: 返回结果
+PluginTarget <- Plugin--: 返回结果
+deactivate PluginTarget
+
+end
+
+@enduml

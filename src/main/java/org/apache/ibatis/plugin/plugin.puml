@@ -1,0 +1,85 @@
+@startuml
+
+interface Interceptor {
+  + intercept(Invocation invocation) Object throws Throwable;
+  + plugin(Object target) Object
+  + setProperties(Properties properties);
+}
+note bottom of Interceptor
+  插件拦截器接口,plugin方法调用Plugin
+  创建代理类，intercept方法执行拦截逻辑
+end note
+
+class InterceptorChain
+note bottom of InterceptorChain
+  插件拦截器链，pluginAll方法负责创建
+  代理类,addInterceptor负责添加插件
+end note
+
+class Invocation {
+  - final Object target;
+  - final Method method;
+  - final Object[] args;
+
+  + proceed() Object
+}
+note bottom of Invocation
+  封装一个方法的调用,proceed方法执行封
+  装的方法的调用: method.invoke(target, args);
+end note
+
+class Plugin implements InvocationHandler {
+  + static Object wrap(Object target, Interceptor interceptor)
+  + invoke(Object proxy, Method method, Object[] args) Object throws Throwable
+}
+note bottom of Plugin
+  wrap方法负责创建jdk动态代理，
+  invoke方法将拦截到的方法调用转发
+  给插件执行或直接执行
+end note
+
+class Configuration {
+  #  final interceptorChain InterceptorChain = new InterceptorChain()
+
+  + getInterceptors() List<Interceptor>
+  + newParameterHandler(MappedStatement, Object, BoundSql) ParameterHandler
+  + newResultSetHandler(Executor executor, MappedStatement, RowBounds, ParameterHandler, ResultHandler, BoundSql) ResultSetHandler
+  + newStatementHandler(Executor, MappedStatement, Object, RowBounds, ResultHandler, BoundSql) StatementHandler
+  + newExecutor(Transaction, ExecutorType) Executor
+  + addInterceptor(Interceptor)
+}
+note bottom of Configuration
+  解析config配置文件的plugins节点时
+  (XMLConfigBuilder.pluginElement(XNode plugins))，
+  添加插件(addInterceptor(Interceptor)),
+  创建ParameterHandler、ResultSetHandler、
+  StatementHandler、Executor时调用
+  interceptorChain.pluginAll(target)
+  方法创建对应的jdk动态代理类
+end note
+
+interface @Intercepts {
+  value() Signature[]
+}
+note bottom of @Intercepts
+  插件注解
+end note
+
+interface @Signature {
+  type() Class<?>
+
+  method() String
+
+  args() Class<?>[]
+}
+note bottom of @Signature
+  注解哪个类的哪个方法需要拦截
+end note
+
+Configuration "1" *--> "1" InterceptorChain
+InterceptorChain "1" *--> "n" Interceptor
+Plugin "1" *--> "1" Interceptor
+Interceptor *.. Invocation
+
+
+@enduml

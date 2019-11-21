@@ -1,0 +1,177 @@
+@startuml
+
+class Configuration
+
+interface Executor {
+  + NO_RESULT_HANDLER ResultHandler
+
+  + update(MappedStatement, Object) int throws SQLException;
+  + query(MappedStatement, Object, RowBounds, ResultHandler, CacheKey, BoundSql) <E> List<E> throws SQLException;
+  + query(MappedStatement, Object, RowBounds, ResultHandler) <E> List<E> throws SQLException;
+  + queryCursor(MappedStatement, Object, RowBounds) <E> Cursor<E> throws SQLException;
+  + flushStatements() List<BatchResult> throws SQLException;
+  + commit(boolean required) throws SQLException;
+  + rollback(boolean required) throws SQLException;
+  + createCacheKey(MappedStatement, Object, RowBounds, BoundSql) CacheKey;
+  + isCached(MappedStatement, CacheKey) boolean;
+  + clearLocalCache();
+  + deferLoad(MappedStatement, MetaObject, String, CacheKey, Class<?>);
+  + getTransaction() Transaction;
+  + close(boolean) Transaction;
+  + isClosed() boolean;
+  + setExecutorWrapper(Executor executor);
+}
+
+abstract class BaseExecutor implements Executor {
+  # transaction Transaction
+  # wrapper Executor
+
+  # deferredLoads ConcurrentLinkedQueue<DeferredLoad>
+  # localCache PerpetualCache
+  # localOutputParameterCache PerpetualCache
+  # configuration Configuration
+
+  # queryStack int
+  # closed boolean
+
+  # abstract doUpdate(MappedStatement, Object) int throws SQLException;
+  # abstract doFlushStatements(boolean) List<BatchResult> throws SQLException;
+  # abstract doQuery(MappedStatement, Object, RowBounds, ResultHandler, BoundSql) <E> List<E> throws SQLException;
+  # abstract doQueryCursor(MappedStatement, Object, RowBounds, BoundSql) <E> Cursor<E> throws SQLException;
+}
+note left of BaseExecutor
+  抽取executor公共处理逻辑
+  具体的操作有do*方法由子类实现
+end note
+
+
+class BatchExecutor extends BaseExecutor {
+  + doUpdate(MappedStatement, Object) int throws SQLException
+  + doFlushStatements(boolean) List<BatchResult> throws SQLException
+  + doQuery(MappedStatement, Object, RowBounds, ResultHandler, BoundSql) <E> List<E> throws SQLException
+  + doQueryCursor(MappedStatement, Object, RowBounds, BoundSql) <E> Cursor<E> throws SQLException
+}
+
+class CachingExecutor implements Executor {
+}
+
+class ReuseExecutor extends BaseExecutor {
+  + doUpdate(MappedStatement, Object) int throws SQLException
+  + doFlushStatements(boolean) List<BatchResult> throws SQLException
+  + doQuery(MappedStatement, Object, RowBounds, ResultHandler, BoundSql) <E> List<E> throws SQLException
+  + doQueryCursor(MappedStatement, Object, RowBounds, BoundSql) <E> Cursor<E> throws SQLException;
+}
+
+class SimpleExecutor extends BaseExecutor {
+  + doUpdate(MappedStatement, Object) int throws SQLException
+  + doFlushStatements(boolean) List<BatchResult> throws SQLException
+  + doQuery(MappedStatement, Object, RowBounds, ResultHandler, BoundSql) <E> List<E> throws SQLException
+  + doQueryCursor(MappedStatement, Object, RowBounds, BoundSql) <E> Cursor<E> throws SQLException;
+}
+
+
+'''''''''''''''''''statement包''''''''''''''''''''
+interface StatementHandler {
+  prepare(Connection, Integer) Statement throws SQLException;
+  parameterize(Statement) throws SQLException;
+  batch(Statement) throws SQLException;
+  update(Statement) int throws SQLException;
+  query(Statement, ResultHandler)  throws SQLException;
+  queryCursor(Statement) <E> Cursor<E> throws SQLException;
+  getBoundSql() BoundSql
+  getParameterHandler() ParameterHandler
+
+}
+
+
+abstract class BaseStatementHandler implements StatementHandler {
+  # final configuration Configuration
+  # final objectFactory ObjectFactory
+  # final typeHandlerRegistry TypeHandlerRegistry
+  # final resultSetHandler ResultSetHandler
+  # final parameterHandler ParameterHandler
+
+  # final executor Executor
+  # final mappedStatement MappedStatement
+  # final rowBounds RowBounds
+
+  # boundSql BoundSql
+
+  # abstract instantiateStatement(Connection) Statement throws SQLException;
+}
+
+class CallableStatementHandler extends BaseStatementHandler {
+}
+
+class PreparedStatementHandler extends BaseStatementHandler {
+}
+
+class SimpleStatementHandler extends BaseStatementHandler {
+}
+
+class RoutingStatementHandler implements StatementHandler {
+  - final delegate StatementHandler
+  + RoutingStatementHandler(Executor, MappedStatement, Object, RowBounds, ResultHandler, BoundSql)
+}
+note bottom of RoutingStatementHandler
+  构造函数中根据不同ms.getStatementType()
+  创建对应的StatementHandler赋值给delegate
+end note
+
+'''''''''''''''''''parameter包''''''''''''''''''''
+interface ParameterHandler {
+  getParameterObject() Object
+  setParameters(PreparedStatement ps) throws SQLException;
+}
+
+class DefaultParameterHandler implements ParameterHandler {
+  - final typeHandlerRegistry TypeHandlerRegistry
+
+  - final mappedStatement MappedStatement
+  - final parameterObject Object
+  - final boundSql BoundSql
+  - final configuration Configuration
+}
+
+'''''''''''''''''''resultset包''''''''''''''''''''
+interface ResultSetHandler {
+  handleResultSets(Statement stmt) <E> List<E> throws SQLException
+  handleCursorResultSets(Statement stmt) <E> Cursor<E> throws SQLException;
+  handleOutputParameters(CallableStatement cs) throws SQLException;
+}
+
+class DefaultResultSetHandler implements ResultSetHandler {
+
+  - static final DEFERRED Object
+
+  - final executor Executor
+  - final configuration Configuration
+  - final mappedStatement MappedStatement
+  - final rowBounds RowBounds
+  - final parameterHandler ParameterHandler
+  - final resultHandler ResultHandler<?>
+  - final boundSql BoundSql
+  - final typeHandlerRegistry TypeHandlerRegistry
+  - final objectFactory ObjectFactory
+  - final reflectorFactory ReflectorFactory
+
+  '' nested resultmaps
+  - final nestedResultObjects Map<CacheKey, Object>
+  - final ancestorObjects Map<String, Object>
+  - previousRowValue Object;
+
+  '' multiple resultsets
+  - final nextResultMaps Map<String, ResultMapping>
+  - final pendingRelations Map<CacheKey, List<PendingRelation>>
+
+  '' Cached Automappings
+  - final autoMappingsCache Map<String, List<UnMappedColumnAutoMapping>>
+
+  '' temporary marking flag that indicate using constructor mapping (use field to reduce memory usage)
+  - useConstructorMappings boolean
+}
+
+BaseExecutor *-- Configuration
+RoutingStatementHandler *-- StatementHandler
+
+@enduml

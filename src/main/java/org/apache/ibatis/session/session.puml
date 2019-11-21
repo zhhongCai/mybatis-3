@@ -1,0 +1,79 @@
+@startuml
+
+interface SqlSession extends Closeable {
+  selectOne(String): <T> T
+  selectOne(String, Object) <T> T
+  selectList(String) <E> List<E>
+  selectList(String, Object) <E> List<E>
+  selectList(String, Object, RowBounds) <E> List<E>
+  selectMap(String, String) <K, V> Map<K, V>
+  selectMap(String, Object, String) <K, V> Map<K, V>
+  selectMap(String, Object, String, RowBounds) <K, V> Map<K, V>
+  selectCursor(String) <T> Cursor<T>
+  selectCursor(String, Object) <T> Cursor<T>
+  selectCursor(String, Object, RowBounds) <T> Cursor<T>
+  select(String, Object, ResultHandler)
+  select(String, ResultHandler)
+  select(String, Object, RowBounds, ResultHandler)
+  insert(String) int
+  insert(String, Object) int
+  update(String) int
+  update(String, Object) int
+  delete(String) int
+  delete(String, Object) int
+  commit()
+  commit(boolean)
+  rollback()
+  rollback(boolean)
+  flushStatements() List<BatchResult>
+  close();
+  clearCache();
+  getConfiguration() Configuration
+  getMapper(Class<T>) <T> T
+  getConnection() Connection
+}
+
+class DefaultSqlSession implements SqlSession {
+}
+
+class SqlSessionManager implements SqlSessionFactory, SqlSession {
+   - final sqlSessionFactory SqlSessionFactory
+   - final sqlSessionProxy SqlSession
+
+   - final localSqlSession ThreadLocal<SqlSession>
+}
+
+note bottom of SqlSessionManager
+  jdk动态代理对象sqlSessionProxy，startManagedSession(*)方法
+  开启一个sqlSession,并保存到线程变量中localSqlSession,
+  由SqlSessionInterceptor拦截sqlSession的方法调用，统一管理事务(commit,rollback)
+end note
+
+class SqlSessionManager.SqlSessionInterceptor implements InvocationHandler {
+  invoke(Object proxy, Method method, Object[] args) Object throws Throwable
+}
+
+interface SqlSessionFactory {
+  openSession() SqlSession
+  openSession(boolean) SqlSession
+  openSession(Connection) SqlSession
+  openSession(TransactionIsolationLevel) SqlSession
+  openSession(ExecutorType) SqlSession
+  openSession(ExecutorType, boolean) SqlSession
+  openSession(ExecutorType, TransactionIsolationLevel) SqlSession
+  openSession(ExecutorType, Connection) SqlSession
+  getConfiguration() SqlSession
+}
+
+class DefaultSqlSessionFactory implements SqlSessionFactory {
+}
+
+class Configuration {
+}
+
+class SqlSessionFactoryBuilder {
+}
+
+SqlSessionManager *.. SqlSessionManager.SqlSessionInterceptor
+
+@enduml

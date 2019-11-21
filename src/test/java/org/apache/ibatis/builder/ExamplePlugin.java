@@ -15,20 +15,53 @@
  */
 package org.apache.ibatis.builder;
 
+import org.apache.ibatis.executor.Executor;
+import org.apache.ibatis.executor.parameter.ParameterHandler;
+import org.apache.ibatis.executor.resultset.ResultSetHandler;
+import org.apache.ibatis.executor.statement.StatementHandler;
+import org.apache.ibatis.logging.Log;
+import org.apache.ibatis.logging.LogFactory;
+import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.plugin.Interceptor;
 import org.apache.ibatis.plugin.Intercepts;
 import org.apache.ibatis.plugin.Invocation;
 import org.apache.ibatis.plugin.Plugin;
+import org.apache.ibatis.plugin.Signature;
+import org.apache.ibatis.session.ResultHandler;
+import org.apache.ibatis.session.RowBounds;
 
+import java.sql.PreparedStatement;
+import java.sql.Statement;
 import java.util.Properties;
 
-@Intercepts({})
+@Intercepts({
+  @Signature(type = ParameterHandler.class, method = "setParameters", args = {PreparedStatement.class}),
+  @Signature(type = ResultSetHandler.class, method = "handleResultSets", args = {Statement.class}),
+  @Signature(type = StatementHandler.class, method = "query", args = {Statement.class, ResultHandler.class}),
+  @Signature(type = Executor.class, method = "query", args = {MappedStatement.class, Object.class, RowBounds.class, ResultHandler.class})
+})
 public class ExamplePlugin implements Interceptor {
   private Properties properties;
 
+  private static final Log LOG = LogFactory.getLog(ExamplePlugin.class);
+
   @Override
   public Object intercept(Invocation invocation) throws Throwable {
+    LOG.error(invocation.getTarget().getClass().getName() + "." + invocation.getMethod().getName() + "(" + getParamClass(invocation.getArgs()) + ")");
     return invocation.proceed();
+  }
+
+  private String getParamClass(Object[] args) {
+    StringBuilder sb = new StringBuilder("");
+    if (args != null && args.length > 0) {
+      for (Object arg : args) {
+        if (arg != null && arg.getClass() != null) {
+          sb.append(arg.getClass().getSimpleName()).append(",");
+        }
+      }
+      sb.deleteCharAt(sb.length() - 1);
+    }
+    return sb.toString();
   }
 
   @Override

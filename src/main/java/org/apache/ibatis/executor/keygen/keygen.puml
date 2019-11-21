@@ -1,0 +1,35 @@
+@startuml
+
+interface KeyGenerator {
+  + processBefore(Executor, MappedStatement, Statement, Object);
+  + processAfter(Executor, MappedStatement, Statement, Object);
+}
+note right of KeyGenerator
+    在CallableStatementHandler,PreparedStatementHandler,
+    SimpleStatementHandler的update(Statement)方法中使用:
+    keyGenerator.processAfter(executor, mappedStatement, cs, parameterObject);
+    or keyGenerator.processAfter(executor, mappedStatement, statement, parameterObject);
+end note
+
+
+class NoKeyGenerator implements KeyGenerator {
+}
+
+class Jdbc3KeyGenerator implements KeyGenerator {
+}
+note bottom of Jdbc3KeyGenerator
+    调用Statement.getGeneratedKeys()方法获取key
+    依赖具体jdbc实现
+end note
+
+class SelectKeyGenerator implements KeyGenerator {
+}
+note bottom of SelectKeyGenerator
+    解析mapper中配置的selectKey: XMLStatementBuilder.parseSelectKeyNode()，
+    或注解@SelectKey: MapperAnnotation.handleSelectKeyAnnotation()，
+    根据配置生成KeyGenerator，添加到Configuration的keyGenerators缓存中
+end note
+
+
+
+@enduml

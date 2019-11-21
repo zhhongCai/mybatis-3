@@ -1,0 +1,83 @@
+@startuml
+
+class org.apache.ibatis.executor.loader.ResultLoader {
+
+  # final configuration Configuration
+  # final executor Executor
+  # final mappedStatement MappedStatement
+  # final parameterObject Object
+  # final targetType Class<?>
+  # final objectFactory ObjectFactory
+  # final cacheKey CacheKey
+  # final boundSql BoundSql
+  # final resultExtractor ResultExtractor
+  # final creatorThreadId long
+
+  # loaded boolean
+  # resultObject Object
+
+  + loadResult() Object throws SQLException
+}
+
+class org.apache.ibatis.executor.loader.ResultLoaderMap {
+  - final loaderMap Map<String, LoadPair>
+}
+
+class org.apache.ibatis.executor.loader.ResultLoaderMap.LoadPair implements Serializable {
+  - static final  FACTORY_METHOD String
+  - final transient serializationCheck Object
+  - transient metaResultObject MetaObject
+  - transient resultLoader ResultLoader
+  - transient log Log
+  - configurationFactory Class<?>
+  - property String
+  - mappedStatement String
+  - mappedParameter Serializable
+}
+
+interface org.apache.ibatis.executor.loader.ProxyFactory {
+  createProxy(Object, ResultLoaderMap, Configuration, ObjectFactory, List<Class<?>>, List<Object> ) Object
+}
+
+class org.apache.ibatis.executor.loader.cglib.CglibProxyFactory implements org.apache.ibatis.executor.loader.ProxyFactory {
+}
+
+class org.apache.ibatis.executor.loader.cglib.CglibProxyFactory.EnhancedResultObjectProxyImpl implements MethodInterceptor {
+  + intercept(Object, Method, Object[], MethodProxy) Object throws Throwable
+}
+
+class org.apache.ibatis.executor.loader.cglib.CglibProxyFactory.EnhancedDeserializationProxyImpl extends AbstractEnhancedDeserializationProxy implements MethodInterceptor  {
+  + intercept(Object, Method, Object[], MethodProxy) Object throws Throwable
+}
+
+class org.apache.ibatis.executor.loader.javassist.JavassistProxyFactory implements org.apache.ibatis.executor.loader.ProxyFactory {
+}
+
+class org.apache.ibatis.executor.loader.javassist.JavassistProxyFactory.EnhancedResultObjectProxyImpl implements MethodInterceptor {
+  + intercept(Object, Method, Object[], MethodProxy) Object throws Throwable
+}
+
+class org.apache.ibatis.executor.loader.javassist.JavassistProxyFactory.EnhancedDeserializationProxyImpl extends AbstractEnhancedDeserializationProxy implements MethodInterceptor  {
+  + intercept(Object, Method, Object[], MethodProxy) Object throws Throwable
+}
+
+abstract class org.apache.ibatis.executor.loader.AbstractEnhancedDeserializationProxy {
+ # abstract newSerialStateHolder(Object, Map<String, ResultLoaderMap.LoadPair>, ObjectFactory, List<Class<?>>, List<Object>) AbstractSerialStateHolder
+}
+
+abstract class org.apache.ibatis.executor.loader.AbstractSerialStateHolder implements Externalizable {
+  # abstract createDeserializationProxy(Object target, Map<String, ResultLoaderMap.LoadPair>, ObjectFactory, List<Class<?>>, List<Object>) Object
+}
+
+class org.apache.ibatis.executor.loader.cglib.CglibSerialStateHolder extends AbstractSerialStateHolder {
+}
+
+class org.apache.ibatis.executor.loader.javassist.JavassistSerialStateHolder extends AbstractSerialStateHolder {
+}
+
+org.apache.ibatis.executor.loader.ResultLoaderMap *.. org.apache.ibatis.executor.loader.ResultLoaderMap.LoadPair
+org.apache.ibatis.executor.loader.ResultLoaderMap.LoadPair *-- org.apache.ibatis.executor.loader.ResultLoader
+org.apache.ibatis.executor.loader.cglib.CglibProxyFactory *.. org.apache.ibatis.executor.loader.cglib.CglibProxyFactory.EnhancedResultObjectProxyImpl
+org.apache.ibatis.executor.loader.cglib.CglibProxyFactory *.. org.apache.ibatis.executor.loader.cglib.CglibProxyFactory.EnhancedDeserializationProxyImpl
+
+@enduml

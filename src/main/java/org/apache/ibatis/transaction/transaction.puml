@@ -1,0 +1,32 @@
+@startuml
+
+
+interface Transaction {
+  + getConnection() Connection throws SQLException;
+  + commit() throws SQLException;
+  + rollback() throws SQLException;
+  + close() throws SQLException;
+  + getTimeout() Integer throws SQLException;
+
+}
+
+interface TransactionFactory {
+  + setProperties(Properties props)
+  + newTransaction(Connection conn) Transaction
+
+  + newTransaction(DataSource, TransactionIsolationLevel, boolean) Transaction
+}
+
+class ManagedTransaction implements Transaction {
+}
+
+class JdbcTransaction implements Transaction {
+}
+
+class ManagedTransactionFactory implements TransactionFactory {
+}
+
+class JdbcTransactionFactory implements TransactionFactory {
+}
+
+@enduml
